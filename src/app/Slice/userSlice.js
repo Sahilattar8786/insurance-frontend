@@ -83,6 +83,24 @@ export const getUserById=createAsyncThunk(
         }
     }
 )
+
+//search user 
+export const searchuser=createAsyncThunk(
+    'search/user' ,async(query,{rejectWithValue})=>{
+        try{
+            const config={
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            }    
+            const response = await axios.get(`http://localhost:7000/api/private/find?query=${query}`,config)
+            console.log('searchData:',response)
+            return response.data
+    }catch(error){
+        return rejectWithValue(error.response.data)
+    }
+}
+)
 const initialState={
     data:null,
     userDetail:null,
@@ -160,6 +178,24 @@ const userSlice = createSlice({
             state.loading=false
             state.error=action.payload.error
             state.success=false  ;
+        })
+        .addCase
+        (searchuser.pending,(state,action)=>{
+            state.loading=true
+        })
+        .addCase
+        (searchuser.fulfilled,(state,action)=>{
+            state.loading=false
+            state.success=true
+            state.data=action.payload
+        })
+        .addCase
+        (searchuser.rejected,(state,action)=>{
+            state.loading=false
+            state.data=[]
+            state.error=action.payload
+            state.success=false
+            
         })
     }
 })

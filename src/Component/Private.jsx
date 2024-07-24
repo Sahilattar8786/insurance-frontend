@@ -1,19 +1,21 @@
 import { Add  } from '@mui/icons-material'
-import { Button,Box ,Typography,Grid, TableContainer ,Paper,Table, TableHead, TableRow ,TableCell, TableBody} from '@mui/material'
-import React, { useEffect }  from 'react'
+import { Button,Box ,Typography,Grid, TableContainer ,Paper,Table, TableHead, TableRow ,TableCell, TableBody, TextField} from '@mui/material'
+import React, { useEffect, useState,useCallback }  from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useDispatch,useSelector } from 'react-redux'
-import { deleteUser, getUser } from '../app/Slice/userSlice'
+import { deleteUser, getUser, searchuser } from '../app/Slice/userSlice'
 import { toast,ToastContainer } from 'react-toastify'
+import debounce from 'lodash/debounce';
 export default function Private() {
 
     
    const navigate=useNavigate()
    const dispatch=useDispatch()
+   const [searchQuery,setSearchQuery]=useState('');
    const userData=useSelector(state=>state.userData.data)
    useEffect(()=>{
-     dispatch(getUser())
-   },[dispatch,userData])
+      dispatch(getUser())
+   },[dispatch])
    
    const formatDate = (dateString) => {
     const date = new Date(dateString);
@@ -38,6 +40,22 @@ export default function Private() {
       toast.error('Failed to delete user');
   }
   }
+  const debouncedSearch = useCallback(debounce((query) => {
+    console.log('query',query)
+    if (query.trim()) {
+        dispatch(searchuser(query));
+    } else {
+        // Optionally, you might want to reset search results when the query is cleared
+        dispatch(getUser());
+    }
+}, 1000), [dispatch]);
+
+const searchHandler = (e) => {
+    const value = e.target.value;
+    console.log(value)
+    setSearchQuery(value);
+    debouncedSearch(value); // Call the debounced function
+};
   return (
     <Box
      sx={{
@@ -48,14 +66,25 @@ export default function Private() {
     >
     <Box sx={{ margin: '10px 0' }}>
     <Grid container alignItems="center" justifyContent="space-between" spacing={2}>
-        <Grid item  xs={5}  sm={6} md={8}>
+        <Grid item  xs={5}  sm={4} md={4}>
             <Typography variant="h4" component="div"  sx={{ 
                     fontSize: { xs: '1.5rem', sm: '2rem', md: '2.125rem' } 
                 }}>
                 User Management
             </Typography>
         </Grid>
-        <Grid item xs={6} sm={6} md={4} sx={{ textAlign: { xs: 'center', sm: 'right' } }}>
+        <Grid item sm={4} md={4}>
+            <TextField 
+              id="search-input"
+              label="Search by Name Mobile No"
+              type="search"
+              variant="outlined"
+              size='small'
+              value={searchQuery}
+              onChange={searchHandler}
+            />
+        </Grid>
+        <Grid item  sm={4} md={4} sx={{ textAlign: { xs: 'center', sm: 'right' } }}>
             <Button variant='contained' color='primary' startIcon={<Add />} onClick={()=>navigate('/Adduser')}>
                 Add User
             </Button>
@@ -97,7 +126,16 @@ export default function Private() {
                             <Button variant='contained' color='secondary' sx={{m:0.5}} onClick={()=>deleteHandler(row._id)}>Delete</Button>
                         </TableCell>
                     </TableRow>
-                ))) : <Typography variant='body1'>No Data Found</Typography>
+                ))) : <TableRow>
+                     <TableCell colSpan={7} sx={{
+                        textAlign:{
+                            xs:'start',
+                            md:'center'
+                        },
+                        fontSize:{xs:14,md:16},
+                        fontWeight:'bold'
+                     }}>No Data Found</TableCell>
+                </TableRow>
             }
          </TableBody>
         </Table>

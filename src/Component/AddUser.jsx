@@ -95,7 +95,7 @@ export default function AddUser() {
     e.preventDefault();
     //submit the form data
     if (validation()) {
-      const fullName = `${prefix} ${firstName}${MiddleName}${lastName}`;
+      const fullName = `${prefix} ${firstName} ${MiddleName} ${lastName}`;
       console.log(fullName,MobNo,dob,address)
       handleAddUser({ fullName,MobNo,dob,address });
     }
